@@ -1,0 +1,282 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  min-height: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  background: #0f1117;
+  color: #e4e4e7;
+}
+
+.container {
+  padding: 16px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #27272a;
+}
+
+.header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fafafa;
+}
+
+.version {
+  font-size: 11px;
+  color: #71717a;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 16px;
+}
+
+.section h2 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #71717a;
+  margin-bottom: 8px;
+}
+
+/* Status Grid */
+.status-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #18181b;
+  border-radius: 6px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #52525b;
+  flex-shrink: 0;
+}
+
+.status-dot.green { background: #22c55e; }
+.status-dot.yellow { background: #eab308; }
+.status-dot.red { background: #ef4444; }
+
+.status-item span:nth-child(2) {
+  flex: 1;
+  font-size: 12px;
+}
+
+.status-value {
+  font-size: 11px;
+  color: #a1a1aa;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: #18181b;
+  border-radius: 6px;
+}
+
+.info-label {
+  font-size: 10px;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fafafa;
+}
+
+/* Warning */
+.warning {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #422006;
+  border: 1px solid #92400e;
+  border-radius: 6px;
+  color: #fbbf24;
+  font-size: 11px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Rate Limits */
+.rate-limits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rate-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.rate-bar .label {
+  width: 80px;
+  color: #a1a1aa;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.rate-bar .bar-bg {
+  flex: 1;
+  height: 6px;
+  background: #27272a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rate-bar .bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: #22c55e;
+  transition: width 0.3s ease;
+}
+
+.rate-bar .bar-fill.warning { background: #eab308; }
+.rate-bar .bar-fill.danger { background: #ef4444; }
+
+.rate-bar .count {
+  width: 50px;
+  text-align: right;
+  color: #71717a;
+  font-size: 10px;
+}
+
+/* Mode Selector */
+.mode-selector {
+  display: flex;
+  gap: 4px;
+  background: #18181b;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  color: #71717a;
+  font-size: 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mode-btn:hover {
+  color: #a1a1aa;
+}
+
+.mode-btn.active {
+  background: #27272a;
+  color: #fafafa;
+}
+
+/* Activity Log */
+.activity-log {
+  max-height: 160px;
+  overflow-y: auto;
+  background: #18181b;
+  border-radius: 6px;
+}
+
+.activity-log::-webkit-scrollbar {
+  width: 4px;
+}
+
+.activity-log::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.activity-log::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 2px;
+}
+
+.activity-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #27272a;
+  font-size: 11px;
+}
+
+.activity-entry:last-child {
+  border-bottom: none;
+}
+
+.activity-time {
+  color: #52525b;
+  font-size: 10px;
+  min-width: 44px;
+}
+
+.activity-level {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 3px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.activity-level.info { background: #1e3a5f; color: #60a5fa; }
+.activity-level.trade { background: #14532d; color: #4ade80; }
+.activity-level.warn { background: #422006; color: #fbbf24; }
+.activity-level.error { background: #450a0a; color: #f87171; }
+
+.activity-msg {
+  flex: 1;
+  color: #d4d4d8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-empty {
+  padding: 20px;
+  text-align: center;
+  color: #52525b;
+  font-size: 12px;
+}

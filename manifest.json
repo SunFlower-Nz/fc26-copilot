@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "FC26 Copilot",
+  "version": "1.0.0",
+  "description": "MCP server for LLM-powered FUT trading",
+  "permissions": [
+    "storage",
+    "alarms",
+    "tabs",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "https://www.ea.com/*",
+    "https://utas.mob.aem.ea.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.ea.com/ea-sports-fc/ultimate-team/web-app/*"],
+      "js": ["content/content-script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": ["http://localhost/*"]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["content/page-inject.js"],
+      "matches": ["https://www.ea.com/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "ui/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  }
+}

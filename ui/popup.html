@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FC26 Copilot</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1>FC26 Copilot</h1>
+      <span id="version" class="version">v1.0.0</span>
+    </header>
+
+    <!-- Connection Status -->
+    <section class="section">
+      <h2>Connection</h2>
+      <div class="status-grid">
+        <div class="status-item">
+          <span class="status-dot" id="dot-webapp"></span>
+          <span>Web App</span>
+          <span class="status-value" id="status-webapp">--</span>
+        </div>
+        <div class="status-item">
+          <span class="status-dot" id="dot-session"></span>
+          <span>Session</span>
+          <span class="status-value" id="status-session">--</span>
+        </div>
+        <div class="status-item">
+          <span class="status-dot" id="dot-mcp"></span>
+          <span>MCP Server</span>
+          <span class="status-value" id="status-mcp">--</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Session Health -->
+    <section class="section">
+      <h2>Session</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Active for</span>
+          <span class="info-value" id="session-age">--</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Last keepalive</span>
+          <span class="info-value" id="last-keepalive">--</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Coins</span>
+          <span class="info-value" id="coin-balance">--</span>
+        </div>
+      </div>
+      <div id="break-warning" class="warning hidden">
+        Session active too long. Consider taking a break.
+      </div>
+    </section>
+
+    <!-- Rate Limits -->
+    <section class="section">
+      <h2>Rate Limits</h2>
+      <div class="rate-limits" id="rate-limits">
+        <!-- Filled dynamically -->
+      </div>
+    </section>
+
+    <!-- Operation Mode -->
+    <section class="section">
+      <h2>Mode</h2>
+      <div class="mode-selector">
+        <button class="mode-btn active" data-mode="monitor">Monitor</button>
+        <button class="mode-btn" data-mode="assisted">Assisted</button>
+        <button class="mode-btn" data-mode="semi_auto">Semi-Auto</button>
+        <button class="mode-btn" data-mode="auto">Auto</button>
+      </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="section">
+      <h2>Recent Activity</h2>
+      <div class="activity-log" id="activity-log">
+        <div class="activity-empty">No recent activity</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

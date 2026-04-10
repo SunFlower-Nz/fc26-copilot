@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__fc26-copilot__*"
+    ]
+  },
+  "mcpServers": {
+    "fc26-copilot": {
+      "command": "node",
+      "args": ["G:/Work/fc26-mcp/fc26-copilot/mcp-bridge/server.js"]
+    }
+  }
+}
