@@ -250,15 +250,31 @@ async function getWatchlist() {
 }
 
 async function getClubPlayers(params = {}) {
-  const queryParams = {
-    type: 1,
-    count: params.count || 50,
-  };
-  if (params.position) queryParams.position = params.position;
-  if (params.min_rating) queryParams.minrating = params.min_rating;
-  if (params.max_rating) queryParams.maxrating = params.max_rating;
+  const pageSize = Math.min(params.count || 91, 91);
+  const maxTotal = params.max_total || 1000;
+  let start = 0;
+  const allItems = [];
 
-  return eaGet('/club', queryParams);
+  while (allItems.length < maxTotal) {
+    const queryParams = {
+      sort: params.sort || 'desc',
+      type: 'player',
+      count: pageSize,
+      start,
+    };
+    if (params.position) queryParams.position = params.position;
+    if (params.min_rating) queryParams.minrating = params.min_rating;
+    if (params.max_rating) queryParams.maxrating = params.max_rating;
+
+    const page = await eaGet('/club', queryParams);
+    const items = page?.itemData || page?.items || [];
+    allItems.push(...items);
+
+    if (items.length < pageSize) break;
+    start += pageSize;
+  }
+
+  return { itemData: allItems.slice(0, maxTotal), total: allItems.length };
 }
 
 async function getCoinBalance() {
@@ -266,7 +282,7 @@ async function getCoinBalance() {
 }
 
 async function doKeepalive() {
-  return eaGet('/ut/game/fc26/phishing/validate');
+  return eaGet('/phishing/validate');
 }
 
 async function relistAll() {
@@ -295,6 +311,57 @@ async function getActiveSBCs() {
 
 async function getSBCRequirements(sbcId) {
   return eaGet(`/sbs/challenge/${sbcId}`);
+}
+
+async function getSBCSets() {
+  return eaGet('/sbs/sets');
+}
+
+async function getSBCSetChallenges(setId) {
+  return eaGet(`/sbs/setId/${setId}/challenges`);
+}
+
+async function getSBCSquad(challengeId) {
+  return eaGet(`/sbs/challenge/${challengeId}/squad`);
+}
+
+function buildSquadPayload(existingSquad, itemIdsBySlot) {
+  const slots = existingSquad?.squad?.players || existingSquad?.players || [];
+  const slotCount = slots.length || itemIdsBySlot.length || 11;
+
+  const players = [];
+  for (let index = 0; index < slotCount; index += 1) {
+    const id = itemIdsBySlot[index] ?? slots[index]?.itemData?.id ?? 0;
+    players.push({
+      index,
+      itemData: {
+        id: id || 0,
+        dream: false,
+      },
+    });
+  }
+  return { players };
+}
+
+async function setSBCSquad(challengeId, itemIdsBySlot) {
+  const current = await getSBCSquad(challengeId);
+  const body = buildSquadPayload(current, itemIdsBySlot);
+  return eaPut(`/sbs/challenge/${challengeId}/squad`, body);
+}
+
+async function clearSBCSquad(challengeId) {
+  const current = await getSBCSquad(challengeId);
+  const slots = current?.squad?.players || current?.players || [];
+  const emptyIds = slots.map(() => 0);
+  return setSBCSquad(challengeId, emptyIds);
+}
+
+async function submitSBC(challengeId, setId) {
+  const body = { challengeId: parseInt(challengeId, 10) };
+  if (setId !== undefined && setId !== null) {
+    body.setId = parseInt(setId, 10);
+  }
+  return eaPut(`/sbs/challenge/${challengeId}`, body);
 }
 
 async function removeFromWatchlist(tradeId) {
@@ -337,6 +404,18 @@ async function executeMethod(method, params) {
       return getActiveSBCs();
     case 'getSBCRequirements':
       return getSBCRequirements(params.sbcId);
+    case 'getSBCSets':
+      return getSBCSets();
+    case 'getSBCSetChallenges':
+      return getSBCSetChallenges(params.setId);
+    case 'getSBCSquad':
+      return getSBCSquad(params.challengeId);
+    case 'setSBCSquad':
+      return setSBCSquad(params.challengeId, params.itemIdsBySlot);
+    case 'clearSBCSquad':
+      return clearSBCSquad(params.challengeId);
+    case 'submitSBC':
+      return submitSBC(params.challengeId, params.setId);
     case 'removeFromWatchlist':
       return removeFromWatchlist(params.tradeId);
     default:

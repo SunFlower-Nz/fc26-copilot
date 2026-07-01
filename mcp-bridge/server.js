@@ -139,7 +139,13 @@ const TOOL_DEFINITIONS = [
   { name: 'relist_all', description: 'Relist all expired tradepile items at their previous prices. Requires confirmation.', inputSchema: { type: 'object', properties: {} } },
   { name: 'clear_sold', description: 'Remove all sold items from the tradepile.', inputSchema: { type: 'object', properties: {} } },
   { name: 'get_active_sbcs', description: 'Get all currently active SBCs with requirements, rewards, and expiry.', inputSchema: { type: 'object', properties: {} } },
+  { name: 'get_sbc_sets', description: 'Get SBC categories and sets.', inputSchema: { type: 'object', properties: {} } },
   { name: 'get_sbc_requirements', description: 'Get detailed requirements for a specific SBC challenge.', inputSchema: { type: 'object', properties: { sbc_id: { type: 'string' } }, required: ['sbc_id'] } },
+  { name: 'get_sbc_squad', description: 'Get current draft squad for an SBC challenge.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' } }, required: ['challenge_id'] } },
+  { name: 'solve_sbc', description: 'Solve an SBC and return preview (no submit).', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, challenge_name: { type: 'string' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' }, include_unassigned: { type: 'boolean' } }, required: ['challenge_id'] } },
+  { name: 'apply_sbc_solution', description: 'Apply squad to SBC. Requires confirm: true.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, item_ids: { type: 'array', items: { type: 'integer' } }, confirm: { type: 'boolean' } }, required: ['challenge_id', 'item_ids'] } },
+  { name: 'submit_sbc', description: 'Submit SBC after squad applied. Requires confirm: true.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, set_id: { type: 'integer' }, confirm: { type: 'boolean' } }, required: ['challenge_id'] } },
+  { name: 'complete_sbc', description: 'Solve, apply, and submit SBC. Preview without confirm; execute with confirm: true.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, challenge_name: { type: 'string' }, set_id: { type: 'integer' }, confirm: { type: 'boolean' }, apply_only: { type: 'boolean' }, repeat: { type: 'integer' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' } }, required: ['challenge_id'] } },
   { name: 'get_coin_balance', description: 'Get current FUT coin balance.', inputSchema: { type: 'object', properties: {} } },
   { name: 'get_player_market_data', description: 'Get price data from FutBin. Does NOT hit EA servers.', inputSchema: { type: 'object', properties: { player_name: { type: 'string' }, asset_id: { type: 'integer' }, platform: { type: 'string', enum: ['pc','ps','xbox'], default: 'pc' } } } },
   { name: 'get_session_status', description: 'Check if web app is open, session is authenticated, and rate limit usage.', inputSchema: { type: 'object', properties: {} } },
@@ -155,7 +161,7 @@ function handleLocally(request) {
       result: {
         protocolVersion: '2024-11-05',
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: 'fc26-copilot', version: '1.0.0' },
+        serverInfo: { name: 'fc26-copilot', version: '2.0.0' },
       },
     };
   }

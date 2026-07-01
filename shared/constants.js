@@ -12,6 +12,8 @@ export const RATE_LIMITS = {
   list:          { minDelay: 2000, maxDelay: 5000,  maxPerHour: 40,  maxPerDay: 300 },
   relist:        { minDelay: 30000, maxDelay: 60000, maxPerHour: 4,  maxPerDay: 20 },
   read:          { minDelay: 3000, maxDelay: 8000,  maxPerHour: 80,  maxPerDay: 800 },
+  sbc_read:      { minDelay: 3000, maxDelay: 6000,  maxPerHour: 40,  maxPerDay: 400 },
+  sbc_write:     { minDelay: 5000, maxDelay: 10000, maxPerHour: 20,  maxPerDay: 100 },
   keepalive:     { minDelay: 300000, maxDelay: 480000, maxPerHour: 12, maxPerDay: 144 },
   global:        { minDelay: 2000, maxDelay: 4000,  maxPerHour: 300, maxPerDay: 3000 },
 };

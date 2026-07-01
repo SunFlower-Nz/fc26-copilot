@@ -207,10 +207,19 @@ Here are some things you can ask Claude:
 
 > "Clear all sold items"
 
-### SBCs
+### SBCs / DMEs (v2)
 > "What SBCs are active right now?"
 
-> "Show me the requirements for that SBC"
+> "Solve the Bronze Upgrade DME" → returns preview with selected cards
+
+> "Confirm and submit" → call `complete_sbc` with `confirm: true`
+
+Semi-auto flow:
+1. `solve_sbc` — preview only (lists every card selected)
+2. User confirms in chat
+3. `complete_sbc` with `confirm: true` — apply squad + submit
+
+Set mode to **Semi-Auto** in the extension popup. Configure **SBC Protection** (default blocks 87+ and titulares).
 
 ### Session management
 > "How long have I been active?"

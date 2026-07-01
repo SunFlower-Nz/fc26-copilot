@@ -18,7 +18,9 @@ export const clubTools = [
         min_rating: { type: 'integer' },
         max_rating: { type: 'integer' },
         is_untradeable: { type: 'boolean' },
-        count: { type: 'integer', default: 50, maximum: 100 },
+        count: { type: 'integer', default: 91, maximum: 91 },
+        max_total: { type: 'integer', default: 1000, maximum: 1500 },
+        sort: { type: 'string', enum: ['asc', 'desc'], default: 'desc' },
       },
     },
     handler: async (params) => {

@@ -1,0 +1,13 @@
+{
+  "challengeId": 3,
+  "name": "Gold Upgrade",
+  "formation": "f433",
+  "squadSize": 5,
+  "elgReq": [
+    {
+      "type": "PLAYER_LEVEL",
+      "value": 2,
+      "count": 5
+    }
+  ]
+}

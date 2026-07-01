@@ -14,6 +14,7 @@ import { clubTools } from './tools/club-tools.js';
 import { tradepileTools } from './tools/tradepile-tools.js';
 import { sbcTools } from './tools/sbc-tools.js';
 import { priceTools } from './tools/price-tools.js';
+import { checkToolAccess, listToolsWithMeta } from './mode-guard.js';
 
 class MCPServer {
   constructor() {
@@ -21,7 +22,7 @@ class MCPServer {
     this.tools = new Map();
     this.serverInfo = {
       name: 'fc26-copilot',
-      version: '1.0.0',
+      version: '2.0.0',
     };
     this.initialized = false;
   }
@@ -139,14 +140,7 @@ class MCPServer {
   }
 
   _handleToolsList(id) {
-    const tools = [];
-    for (const [name, tool] of this.tools) {
-      tools.push({
-        name: tool.name,
-        description: tool.description,
-        inputSchema: tool.inputSchema,
-      });
-    }
+    const tools = listToolsWithMeta(this.tools);
 
     return {
       jsonrpc: '2.0',
@@ -164,6 +158,27 @@ class MCPServer {
         jsonrpc: '2.0',
         id,
         error: { code: -32602, message: `Unknown tool: ${name}` },
+      };
+    }
+
+    const access = await checkToolAccess(tool, args || {});
+    if (!access.allowed) {
+      return {
+        jsonrpc: '2.0',
+        id,
+        result: {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                success: false,
+                needsConfirmation: access.needsConfirmation || false,
+                error: access.error,
+              }),
+            },
+          ],
+          isError: !access.needsConfirmation,
+        },
       };
     }
 

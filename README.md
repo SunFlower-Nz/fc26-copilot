@@ -362,6 +362,10 @@ All requests require headers: `X-UT-SID`, `X-UT-PHISHING-TOKEN`, `Content-Type: 
 | `/item/{itemId}` | PUT | Move item (to club/tradepile) |
 | `/user/credits` | GET | Coin balance |
 | `/sbs/challenge` | GET | Active SBCs |
+| `/sbs/challenge/{id}` | GET | SBC requirements |
+| `/sbs/challenge/{id}/squad` | GET/PUT | Read/apply SBC squad |
+| `/sbs/challenge/{id}` | PUT | Submit SBC |
+| `/sbs/sets` | GET | SBC categories |
 | `/purchased/items` | GET | Unassigned items |
 
 EA charges **5% tax** on all transfer market sales. Use `calculateProfit()` and `calculateMinSellPrice()` from `shared/constants.js`.

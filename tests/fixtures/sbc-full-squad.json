@@ -1,0 +1,29 @@
+{
+  "challengeId": 100,
+  "name": "Mixed Leagues Challenge",
+  "formation": "f433",
+  "squadSize": 11,
+  "elgReq": [
+    {
+      "type": "TEAM_RATING",
+      "value": 80,
+      "count": 1
+    },
+    {
+      "type": "CHEMISTRY_POINTS",
+      "value": 26,
+      "count": 1
+    },
+    {
+      "type": "SCOPE",
+      "scope": "nation",
+      "value": 54,
+      "count": 3
+    },
+    {
+      "type": "PLAYER_LEVEL",
+      "value": 2,
+      "count": 6
+    }
+  ]
+}

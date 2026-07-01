@@ -190,7 +190,7 @@ function initModeSelector() {
     }
   });
 
-  document.querySelectorAll('.mode-btn').forEach((btn) => {
+  document.querySelectorAll('.mode-btn[data-mode]').forEach((btn) => {
     btn.addEventListener('click', () => {
       currentMode = btn.dataset.mode;
       chrome.storage.local.set({ fc26_mode: currentMode });
@@ -200,8 +200,47 @@ function initModeSelector() {
 }
 
 function updateModeButtons() {
-  document.querySelectorAll('.mode-btn').forEach((btn) => {
+  document.querySelectorAll('.mode-btn[data-mode]').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.mode === currentMode);
+  });
+}
+
+// ── SBC Protection ─────────────────────────────────────────
+
+const DEFAULT_PROTECTED_NAMES =
+  'Alisson, Dest, Militão, Bisseck, Ona Batlle, Fabinho, Bruno, Pelé, Ronaldinho, Nuamah, Evanilson';
+
+function initProtectionSettings() {
+  const ratingInput = document.getElementById('protect-min-rating');
+  const namesInput = document.getElementById('protect-names');
+  const saveBtn = document.getElementById('save-protection');
+  const status = document.getElementById('protection-status');
+
+  chrome.storage.local.get('fc26_protected_players', (data) => {
+    const cfg = data.fc26_protected_players || {};
+    ratingInput.value = cfg.minRating ?? 87;
+    namesInput.value = (cfg.names || []).join(', ') || DEFAULT_PROTECTED_NAMES;
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const minRating = parseInt(ratingInput.value, 10) || 87;
+    const names = namesInput.value
+      .split(',')
+      .map((n) => n.trim())
+      .filter(Boolean);
+
+    chrome.storage.local.set(
+      {
+        fc26_protected_players: {
+          minRating,
+          names,
+          assetIds: [],
+        },
+      },
+      () => {
+        status.textContent = `Saved: block rating ${minRating}+ and ${names.length} names`;
+      }
+    );
   });
 }
 
@@ -234,5 +273,6 @@ async function refresh() {
 // ── Init ─────────────────────────────────────────────────────
 
 initModeSelector();
+initProtectionSettings();
 refresh();
 setInterval(refresh, 3000);

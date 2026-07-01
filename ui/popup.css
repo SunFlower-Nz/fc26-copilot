@@ -280,3 +280,37 @@ body {
   color: #52525b;
   font-size: 12px;
 }
+
+#protect-min-rating,
+#protect-names {
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #3f3f46;
+  background: #18181b;
+  color: #e4e4e7;
+  font-size: 12px;
+}
+
+.save-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #3f3f46;
+  background: #27272a;
+  color: #fafafa;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.save-btn:hover {
+  background: #3f3f46;
+}
+
+#protection-status {
+  margin-top: 8px;
+  color: #4ade80;
+}

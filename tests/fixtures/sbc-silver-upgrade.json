@@ -1,0 +1,13 @@
+{
+  "challengeId": 2,
+  "name": "Silver Upgrade",
+  "formation": "f433",
+  "squadSize": 1,
+  "elgReq": [
+    {
+      "type": "PLAYER_LEVEL",
+      "value": 1,
+      "count": 1
+    }
+  ]
+}

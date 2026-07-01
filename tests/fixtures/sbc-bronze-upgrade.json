@@ -1,0 +1,14 @@
+{
+  "challengeId": 1,
+  "name": "Bronze Upgrade",
+  "formation": "f433",
+  "squadSize": 1,
+  "repeatable": true,
+  "elgReq": [
+    {
+      "type": "PLAYER_LEVEL",
+      "value": 0,
+      "count": 1
+    }
+  ]
+}
