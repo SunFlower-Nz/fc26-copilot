@@ -1,18 +1,13 @@
 /**
  * FC26 Copilot — Content script
- *
- * Bridge between background service worker and page-injected script.
- * Runs in the content script context (isolated world) on the EA web app.
  */
 
 const MESSAGE_REQUEST = 'FC26_COPILOT_REQUEST';
 const MESSAGE_RESPONSE = 'FC26_COPILOT_RESPONSE';
 const SESSION_UPDATE = 'FC26_COPILOT_SESSION';
-const REQUEST_TIMEOUT = 30_000;
+const SESSION_RESTORE = 'FC26_COPILOT_RESTORE';
+const REQUEST_TIMEOUT = 120_000;
 
-/**
- * Inject the page script into the EA web app's page context
- */
 function injectPageScript() {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('content/page-inject.js');
@@ -22,12 +17,6 @@ function injectPageScript() {
   console.log('[FC26 Copilot] Page script injected');
 }
 
-/**
- * Send a request to the page script and wait for response
- * @param {string} method - EA API method name
- * @param {Object} params - method parameters
- * @returns {Promise<*>} result from page script
- */
 function callPageScript(method, params) {
   return new Promise((resolve, reject) => {
     const requestId = crypto.randomUUID();
@@ -72,43 +61,53 @@ function callPageScript(method, params) {
   });
 }
 
-/**
- * Listen for session credential updates from the page script
- */
 function listenForSessionUpdates() {
   window.addEventListener('message', (event) => {
     if (event.source !== window || event.data?.type !== SESSION_UPDATE) return;
 
-    const { sessionId, phishingToken } = event.data;
-    if (sessionId || phishingToken) {
+    const { sessionId, phishingToken, eaBaseUrl } = event.data;
+    if (sessionId || phishingToken || eaBaseUrl) {
       chrome.runtime.sendMessage({
         action: 'sessionUpdate',
         sessionId,
         phishingToken,
+        eaBaseUrl,
       });
     }
   });
 }
 
-/**
- * Listen for requests from the background service worker
- */
+function restoreSessionFromBackground() {
+  chrome.runtime.sendMessage({ action: 'getSessionRestore' }, (response) => {
+    const payload = response?.payload;
+    if (!payload) return;
+    window.postMessage({ type: SESSION_RESTORE, ...payload }, '*');
+  });
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action !== 'callEA') return false;
+  if (message.action === 'callEA') {
+    callPageScript(message.method, message.params)
+      .then((result) => sendResponse({ success: true, data: result }))
+      .catch((error) =>
+        sendResponse({ success: false, error: error.message, errorCode: error.status || null })
+      );
+    return true;
+  }
 
-  callPageScript(message.method, message.params)
-    .then((result) => sendResponse({ success: true, data: result }))
-    .catch((error) => sendResponse({ success: false, error: error.message, errorCode: error.status || null }));
+  if (message.action === 'callDOM') {
+    callPageScript(`dom.${message.method}`, message.params)
+      .then((result) => sendResponse({ success: true, data: result }))
+      .catch((error) => sendResponse({ success: false, error: error.message, data: error.data || null }));
+    return true;
+  }
 
-  // Return true to indicate async response
-  return true;
+  return false;
 });
 
-// Notify background that content script is ready
 chrome.runtime.sendMessage({ action: 'contentScriptReady' });
-
-// Initialize
 injectPageScript();
 listenForSessionUpdates();
+setTimeout(restoreSessionFromBackground, 500);
 
 console.log('[FC26 Copilot] Content script initialized');

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FUT Pilot — Club Analytics</title>
+  <link rel="stylesheet" href="analytics.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Club Analytics</h1>
+      <p class="subtitle">FUT Pilot — visão da conta</p>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-refresh" type="button">Atualizar</button>
+      <label class="toggle">
+        <input type="checkbox" id="use-futbin" checked />
+        FutBin
+      </label>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="metrics-scroll" id="metrics-row"></section>
+
+    <div class="grid-2">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Rating Distribution</h2>
+            <p>Jogadores por overall</p>
+          </div>
+          <div class="tier-badges" id="tier-badges"></div>
+        </div>
+        <div class="chart" id="rating-chart"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Investment by Rating</h2>
+            <p>Investido vs valor atual</p>
+          </div>
+          <div class="tier-badges" id="inv-tier-badges"></div>
+        </div>
+        <div class="chart chart-invest" id="invest-chart"></div>
+        <div class="legend">
+          <span><i class="dot invested"></i> Investido</span>
+          <span><i class="dot current"></i> Valor atual</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid-2">
+      <section class="panel">
+        <h2>Top Gainers</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>OVR</th>
+              <th>Investido</th>
+              <th>Atual</th>
+              <th>P/L</th>
+            </tr>
+          </thead>
+          <tbody id="top-gainers"></tbody>
+        </table>
+      </section>
+
+      <section class="panel">
+        <h2>Top Losers</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>OVR</th>
+              <th>Investido</th>
+              <th>Atual</th>
+              <th>P/L</th>
+            </tr>
+          </thead>
+          <tbody id="top-losers"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <p class="footer-meta" id="footer-meta"></p>
+  </main>
+
+  <div id="loading" class="loading hidden">Carregando analytics…</div>
+
+  <script src="analytics.js" type="module"></script>
+</body>
+</html>

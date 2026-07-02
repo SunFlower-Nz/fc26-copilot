@@ -3,16 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FC26 Copilot</title>
+  <title>FUT Pilot</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <!-- Header -->
     <header class="header">
-      <h1>FC26 Copilot</h1>
-      <span id="version" class="version">v2.0.0</span>
+      <img src="../assets/icons/icon48.png" alt="" class="header-logo" width="36" height="36" />
+      <div class="header-titles">
+        <h1>FUT Pilot</h1>
+        <span id="version" class="version">v2.4.0</span>
+      </div>
     </header>
+
+    <!-- DME / SBC -->
+    <section class="section section-dme">
+      <div class="section-head">
+        <h2>DME / SBC</h2>
+        <label class="dme-filter">
+          <input type="checkbox" id="dme-daily-only" checked />
+          Só diários
+        </label>
+      </div>
+      <div class="dme-toolbar">
+        <button id="analyze-dmes" class="save-btn dme-analyze-btn" type="button">Analisar DMEs</button>
+        <button id="complete-all-dmes" class="save-btn dme-complete-all hidden" type="button">Completar todos</button>
+      </div>
+      <p id="dme-status" class="dme-status">Analise os DMEs para ver opções disponíveis.</p>
+      <div id="dme-list" class="dme-list"></div>
+    </section>
+
+    <!-- Club Analytics -->
+    <section class="section">
+      <h2>Club Analytics</h2>
+      <div id="analytics-mini" class="analytics-mini">Carregando resumo…</div>
+      <button id="open-analytics" class="save-btn" type="button">Abrir painel completo</button>
+    </section>
 
     <!-- Connection Status -->
     <section class="section">
@@ -70,9 +97,9 @@
     <section class="section">
       <h2>Mode</h2>
       <div class="mode-selector">
-        <button class="mode-btn active" data-mode="monitor">Monitor</button>
+        <button class="mode-btn" data-mode="monitor">Monitor</button>
         <button class="mode-btn" data-mode="assisted">Assisted</button>
-        <button class="mode-btn" data-mode="semi_auto">Semi-Auto</button>
+        <button class="mode-btn active" data-mode="semi_auto">Semi-Auto</button>
         <button class="mode-btn" data-mode="auto">Auto</button>
       </div>
     </section>

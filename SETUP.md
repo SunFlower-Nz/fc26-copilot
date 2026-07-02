@@ -1,4 +1,6 @@
-# FC26 Copilot — Step-by-Step Setup Guide
+# FUT Pilot — Step-by-Step Setup Guide
+
+> Antes chamado **FC26 Copilot**. Nome atual: **FUT Pilot** (v2.3+).
 
 This walks you through everything from zero to having Claude trade on the FUT web app.
 
@@ -214,12 +216,19 @@ Here are some things you can ask Claude:
 
 > "Confirm and submit" → call `complete_sbc` with `confirm: true`
 
-Semi-auto flow:
-1. `solve_sbc` — preview only (lists every card selected)
-2. User confirms in chat
-3. `complete_sbc` with `confirm: true` — apply squad + submit
+### Modo autônomo (v2.1)
 
-Set mode to **Semi-Auto** in the extension popup. Configure **SBC Protection** (default blocks 87+ and titulares).
+- **Semi-Auto** é o modo padrão — MCP executa leituras, solver e mercado sem intervenção.
+- **DME submit** sempre exige `confirm: true` no chat (única confirmação humana).
+- Sessão EA persiste **24h** — tokens salvos mesmo se fechar a aba FUT.
+- Chamadas EA vão **direto do service worker** (não precisa aba FUT aberta o tempo todo).
+- Se tokens expirarem, extensão abre aba FUT em **background** para renovar.
+
+Fluxo DME:
+```
+solve_sbc(challenge_id)           → automático (preview)
+complete_sbc(..., confirm: true)  → você confirma no chat → envia
+```
 
 ### Session management
 > "How long have I been active?"

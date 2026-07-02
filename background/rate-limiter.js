@@ -270,6 +270,21 @@ class RateLimiter {
     this._persist();
   }
 
+  /** Clear full stop (e.g. after false-positive 494). */
+  clearFullStop() {
+    this.fullStop = false;
+    this.fullStopUntil = null;
+    logger.info('Full stop cleared manually');
+    this._persist();
+  }
+
+  /** Clear all backoff timers. */
+  clearBackoffs() {
+    this.backoffUntil.clear();
+    logger.info('Rate limit backoffs cleared');
+    this._persist();
+  }
+
   /**
    * Get current usage stats for all action types
    */

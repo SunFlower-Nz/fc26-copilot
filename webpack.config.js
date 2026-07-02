@@ -13,6 +13,7 @@ export default (env, argv) => {
       'content/content-script': './content/content-script.js',
       'content/page-inject': './content/page-inject.js',
       'ui/popup': './ui/popup.js',
+      'ui/analytics': './ui/analytics.js',
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
@@ -29,6 +30,8 @@ export default (env, argv) => {
           { from: 'manifest.json', to: '.' },
           { from: 'ui/popup.html', to: 'ui/' },
           { from: 'ui/popup.css', to: 'ui/' },
+          { from: 'ui/analytics.html', to: 'ui/' },
+          { from: 'ui/analytics.css', to: 'ui/' },
           { from: 'assets', to: 'assets', noErrorOnMissing: true },
         ],
       }),

@@ -5,6 +5,7 @@
 import { rateLimiter } from '../rate-limiter.js';
 import { logger } from '../../shared/logger.js';
 import { safeEACall } from '../ea-call.js';
+import { sellPremiumFodder } from '../market/sell-premium-fodder.js';
 
 export const marketTools = [
   {
@@ -146,6 +147,47 @@ export const marketTools = [
 
       return result;
     },
+    requiresConfirmation: true,
+  },
+
+  {
+    name: 'sell_premium_fodder',
+    description:
+      'Preview or list tradeable bronze/silver cards with high market value (e.g. Nilsen, Bounou, Guendouzi, Diop) at EA market average BIN. Default: preview only; use confirm: true to execute.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        confirm: {
+          type: 'boolean',
+          default: false,
+          description: 'true = send to tradepile and list at market average',
+        },
+        dry_run: { type: 'boolean', default: false },
+        min_bronze: {
+          type: 'integer',
+          default: 350,
+          description: 'Min EA market average for bronze (45–64)',
+        },
+        min_silver: {
+          type: 'integer',
+          default: 650,
+          description: 'Min EA market average for silver (65–74)',
+        },
+        min_multiplier: {
+          type: 'number',
+          default: 2.5,
+          description: 'Market avg must be >= tier baseline × this (filters common fodder)',
+        },
+        duration: {
+          type: 'integer',
+          enum: [3600, 10800, 21600, 43200, 86400, 259200],
+          default: 3600,
+        },
+        use_cache: { type: 'boolean', default: true },
+        force_refresh: { type: 'boolean', default: false },
+      },
+    },
+    handler: async (params) => sellPremiumFodder(params),
     requiresConfirmation: true,
   },
 ];

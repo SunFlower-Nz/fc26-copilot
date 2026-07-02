@@ -1,17 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "FC26 Copilot",
-  "version": "2.0.0",
-  "description": "MCP server for LLM-powered FUT trading",
+  "name": "FUT Pilot",
+  "version": "2.4.5",
+  "description": "Assistente MCP para EA FC 26 Ultimate Team — mercado, DMEs, analytics e clube",
   "permissions": [
     "storage",
     "alarms",
     "tabs",
-    "offscreen"
+    "offscreen",
+    "nativeMessaging"
   ],
   "host_permissions": [
     "https://www.ea.com/*",
-    "https://utas.mob.aem.ea.com/*"
+    "https://*.ea.com/*",
+    "https://utas.mob.aem.ea.com/*",
+    "https://utas.mob.v5.prd.futc-ext.gcp.ea.com/*",
+    "https://www.futbin.com/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js",

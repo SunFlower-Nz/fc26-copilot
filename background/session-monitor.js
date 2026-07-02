@@ -1,13 +1,23 @@
 /**
  * FC26 Copilot — Session monitor
  *
- * Tracks EA web app auth state, schedules keepalives, and manages session lifecycle.
+ * Persists EA credentials and base URL so MCP can call the API directly
+ * from the service worker without requiring the FUT tab to stay open.
  */
 
 import { SESSION_CONFIG } from '../shared/constants.js';
 import { logger } from '../shared/logger.js';
 
-const STORAGE_KEY = 'fc26_session';
+function normalizeEaBaseUrl(url) {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    if (parsed.port === '443' || parsed.port === '80') parsed.port = '';
+    return parsed.toString().replace(/\/$/, '');
+  } catch {
+    return url.replace(':443', '');
+  }
+}
 
 class SessionMonitor {
   constructor() {
@@ -21,11 +31,9 @@ class SessionMonitor {
       lastActivity: null,
     };
 
-    /** @type {number|null} */
-    this.keepaliveAlarm = null;
-    /** @type {number|null} */
+    this.eaBaseUrl = null;
     this.webAppTabId = null;
-    /** @type {Set<function>} */
+    this.tabConnected = false;
     this.listeners = new Set();
 
     this._restore();
@@ -37,15 +45,19 @@ class SessionMonitor {
       const data = stored[STORAGE_KEY];
       if (!data) return;
 
-      // Only restore if session is still plausibly valid (< 2 hours old)
-      const maxAge = 2 * 60 * 60 * 1000;
+      const maxAge = SESSION_CONFIG.RESTORE_MAX_AGE_MS;
       if (data.lastActivity && Date.now() - data.lastActivity < maxAge) {
         this.state = { ...this.state, ...data.state };
-        this.webAppTabId = data.webAppTabId;
+        this.eaBaseUrl = normalizeEaBaseUrl(data.eaBaseUrl) || null;
+        this.webAppTabId = data.webAppTabId || null;
+        this.tabConnected = false;
 
-        if (this.state.isAuthenticated) {
+        if (this.state.sessionId && this.state.phishingToken) {
+          this.state.isAuthenticated = true;
           this._scheduleKeepalive();
-          logger.info('Session state restored from storage');
+          logger.info('Session restored from storage', {
+            hasBaseUrl: Boolean(this.eaBaseUrl),
+          });
         }
       }
     } catch (err) {
@@ -58,30 +70,73 @@ class SessionMonitor {
       await chrome.storage.local.set({
         [STORAGE_KEY]: {
           state: this.state,
+          eaBaseUrl: this.eaBaseUrl,
           webAppTabId: this.webAppTabId,
+          tabConnected: this.tabConnected,
           lastActivity: this.state.lastActivity,
         },
       });
-    } catch (err) {
+    } catch {
       // Non-critical
     }
   }
 
-  /**
-   * Update session credentials from the content script
-   */
-  updateSession(sessionId, phishingToken, tabId) {
+  hasCredentials() {
+    return Boolean(this.state.sessionId && this.state.phishingToken);
+  }
+
+  getEaBaseUrl() {
+    return this.eaBaseUrl;
+  }
+
+  setEaBaseUrl(url) {
+    const normalized = normalizeEaBaseUrl(url);
+    if (!normalized || normalized === this.eaBaseUrl) return;
+    this.eaBaseUrl = normalized;
+    this._persist();
+  }
+
+  getRestorePayload() {
+    if (!this.hasCredentials()) return null;
+    return {
+      sessionId: this.state.sessionId,
+      phishingToken: this.state.phishingToken,
+      eaBaseUrl: this.eaBaseUrl,
+    };
+  }
+
+  attachTab(tabId) {
+    if (!tabId) return;
+    this.webAppTabId = tabId;
+    this.tabConnected = true;
+    this._persist();
+  }
+
+  detachTab() {
+    this.webAppTabId = null;
+    this.tabConnected = false;
+    this._persist();
+  }
+
+  updateSession(sessionId, phishingToken, tabId, eaBaseUrl) {
     const wasAuthenticated = this.state.isAuthenticated;
 
-    this.state.sessionId = sessionId;
-    this.state.phishingToken = phishingToken;
-    this.state.isAuthenticated = !!(sessionId && phishingToken);
+    if (sessionId) this.state.sessionId = sessionId;
+    if (phishingToken) this.state.phishingToken = phishingToken;
+    this.state.isAuthenticated = this.hasCredentials();
     this.state.lastActivity = Date.now();
-    this.webAppTabId = tabId;
+
+    if (tabId) {
+      this.webAppTabId = tabId;
+      this.tabConnected = true;
+    }
+    if (eaBaseUrl) {
+      this.eaBaseUrl = normalizeEaBaseUrl(eaBaseUrl);
+    }
 
     if (!wasAuthenticated && this.state.isAuthenticated) {
       this.state.sessionStartTime = Date.now();
-      logger.info('Session authenticated', { tabId });
+      logger.info('Session authenticated', { tabId: this.webAppTabId });
       this._scheduleKeepalive();
     }
 
@@ -89,9 +144,6 @@ class SessionMonitor {
     this._notify();
   }
 
-  /**
-   * Mark session as expired (e.g. after 401 error)
-   */
   markExpired() {
     this.state.isAuthenticated = false;
     this.state.sessionId = null;
@@ -104,25 +156,17 @@ class SessionMonitor {
     this._notify();
   }
 
-  /**
-   * Record that a keepalive was sent
-   */
   recordKeepalive() {
     this.state.lastKeepalive = Date.now();
     this.state.lastActivity = Date.now();
+    this._persist();
   }
 
-  /**
-   * Record any activity (EA API call)
-   */
   recordActivity() {
     this.state.lastActivity = Date.now();
+    this._persist();
   }
 
-  /**
-   * Check if the session has been active too long and should take a break
-   * @returns {{ shouldBreak: boolean, minutesActive: number }}
-   */
   checkSessionHealth() {
     if (!this.state.sessionStartTime) {
       return { shouldBreak: false, minutesActive: 0 };
@@ -135,26 +179,21 @@ class SessionMonitor {
     };
   }
 
-  /**
-   * Check if keepalive is due
-   * @returns {boolean}
-   */
   isKeepaliveDue() {
     if (!this.state.isAuthenticated) return false;
     if (!this.state.lastKeepalive) return true;
-
-    const elapsed = Date.now() - this.state.lastKeepalive;
-    return elapsed >= SESSION_CONFIG.KEEPALIVE_MIN_MS;
+    return Date.now() - this.state.lastKeepalive >= SESSION_CONFIG.KEEPALIVE_MIN_MS;
   }
 
-  /**
-   * Get current session status for the MCP tool
-   */
   getStatus() {
     const health = this.checkSessionHealth();
     return {
       isAuthenticated: this.state.isAuthenticated,
+      hasStoredCredentials: this.hasCredentials(),
+      tabConnected: this.tabConnected,
       webAppTabId: this.webAppTabId,
+      eaBaseUrl: this.eaBaseUrl,
+      directApiReady: this.hasCredentials(),
       sessionAgeMinutes: health.minutesActive,
       shouldBreak: health.shouldBreak,
       lastKeepalive: this.state.lastKeepalive
@@ -166,32 +205,20 @@ class SessionMonitor {
     };
   }
 
-  /**
-   * Get session headers for EA API calls
-   * @returns {{ 'X-UT-SID': string, 'X-UT-PHISHING-TOKEN': string } | null}
-   */
   getHeaders() {
-    if (!this.state.isAuthenticated) return null;
+    if (!this.hasCredentials()) return null;
     return {
       'X-UT-SID': this.state.sessionId,
       'X-UT-PHISHING-TOKEN': this.state.phishingToken,
     };
   }
 
-  /**
-   * Handle the web app tab closing
-   */
   onTabClosed(tabId) {
-    if (tabId === this.webAppTabId) {
-      logger.info('Web app tab closed', { tabId });
-      this.markExpired();
-      this.webAppTabId = null;
-    }
+    if (tabId !== this.webAppTabId) return;
+    logger.info('FUT tab closed — keeping stored credentials for direct API', { tabId });
+    this.detachTab();
   }
 
-  /**
-   * Subscribe to state changes
-   */
   onChange(callback) {
     this.listeners.add(callback);
     return () => this.listeners.delete(callback);
@@ -199,20 +226,20 @@ class SessionMonitor {
 
   _notify() {
     for (const cb of this.listeners) {
-      try { cb(this.state); } catch (e) { /* ignore */ }
+      try {
+        cb(this.state);
+      } catch {
+        // ignore
+      }
     }
   }
 
   _scheduleKeepalive() {
     this._cancelKeepalive();
-
     const delay =
       SESSION_CONFIG.KEEPALIVE_MIN_MS +
       Math.random() * (SESSION_CONFIG.KEEPALIVE_MAX_MS - SESSION_CONFIG.KEEPALIVE_MIN_MS);
-
-    // Use chrome.alarms for service worker reliability
     chrome.alarms.create('fc26_keepalive', { delayInMinutes: delay / 60_000 });
-    logger.debug('Keepalive scheduled', { delayMs: Math.round(delay) });
   }
 
   _cancelKeepalive() {

@@ -14,6 +14,8 @@ import { clubTools } from './tools/club-tools.js';
 import { tradepileTools } from './tools/tradepile-tools.js';
 import { sbcTools } from './tools/sbc-tools.js';
 import { priceTools } from './tools/price-tools.js';
+import { cacheTools } from './tools/cache-tools.js';
+import { analyticsTools } from './tools/analytics-tools.js';
 import { checkToolAccess, listToolsWithMeta } from './mode-guard.js';
 
 class MCPServer {
@@ -21,8 +23,8 @@ class MCPServer {
     /** @type {Map<string, Object>} */
     this.tools = new Map();
     this.serverInfo = {
-      name: 'fc26-copilot',
-      version: '2.0.0',
+      name: 'fut-pilot',
+      version: '2.4.2',
     };
     this.initialized = false;
   }
@@ -37,6 +39,8 @@ class MCPServer {
       ...tradepileTools,
       ...sbcTools,
       ...priceTools,
+      ...cacheTools,
+      ...analyticsTools,
       // Session tools are built-in
       {
         name: 'get_session_status',
@@ -49,6 +53,31 @@ class MCPServer {
           return {
             success: true,
             data: { session: status, rateLimits: rateStats },
+          };
+        },
+      },
+      {
+        name: 'reset_rate_limits',
+        description:
+          'Clear extension rate-limit full stop and backoffs (e.g. after false-positive EA 494). Does not affect EA server limits.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            confirm: { type: 'boolean', description: 'Must be true to reset' },
+          },
+        },
+        handler: async (params) => {
+          if (!params.confirm) {
+            return {
+              success: false,
+              error: 'Confirmation required. Re-call with confirm: true.',
+            };
+          }
+          rateLimiter.clearFullStop();
+          rateLimiter.clearBackoffs();
+          return {
+            success: true,
+            data: { message: 'Rate limit full stop and backoffs cleared.', stats: rateLimiter.getStats() },
           };
         },
       },

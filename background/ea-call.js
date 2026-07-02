@@ -39,7 +39,18 @@ export async function safeEACall(method, params) {
         return { success: false, error: 'Rate limited by EA. Pausing for 5 minutes.' };
       case ERROR_CODES.TRANSFER_BAN:
         rateLimiter.triggerFullStop(BACKOFF_DURATIONS[ERROR_CODES.TRANSFER_BAN]);
-        return { success: false, error: 'TRANSFER MARKET BAN DETECTED. All operations stopped for 24 hours.' };
+        return {
+          success: false,
+          error: 'TRANSFER MARKET BAN DETECTED. All operations stopped for 24 hours.',
+        };
+      case ERROR_CODES.TRANSFER_MARKET_LOCKED:
+        rateLimiter.triggerBackoff('list', BACKOFF_DURATIONS[ERROR_CODES.TRANSFER_MARKET_LOCKED]);
+        rateLimiter.triggerBackoff('global', 300_000);
+        return {
+          success: false,
+          error:
+            'Transfer market locked (EA 494). Listings blocked — SBC and club reads can continue.',
+        };
       case ERROR_CODES.SERVER_ERROR:
         return { success: false, error: 'EA server error. Try again in 30 seconds.' };
       default:

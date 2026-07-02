@@ -1,0 +1,9 @@
+{
+  "name": "com.fc26.copilot",
+  "description": "FUT Pilot Native Messaging Host",
+  "path": "HOST_PATH_PLACEHOLDER",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://EXTENSION_ID_PLACEHOLDER/"
+  ]
+}

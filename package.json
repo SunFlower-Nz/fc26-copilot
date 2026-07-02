@@ -1,12 +1,13 @@
 {
-  "name": "fc26-copilot",
-  "version": "1.0.0",
-  "description": "MCP server Chrome extension for LLM-powered FUT trading",
+  "name": "fut-pilot",
+  "version": "2.4.5",
+  "description": "FUT Pilot — MCP Chrome extension for EA FC 26 Ultimate Team",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "webpack --mode development --watch",
     "build": "webpack --mode production",
+    "icons": "node scripts/generate-icons.mjs",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit"
   },
   "devDependencies": {

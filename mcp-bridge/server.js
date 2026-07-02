@@ -130,7 +130,11 @@ const TOOL_DEFINITIONS = [
   { name: 'buy_now', description: 'Buy an item at its Buy Now price. IMPORTANT: Always confirm with the user before executing.', inputSchema: { type: 'object', properties: { trade_id: { type: 'integer', description: 'Trade ID from search results' }, max_price: { type: 'integer', description: 'Maximum price willing to pay' } }, required: ['trade_id','max_price'] } },
   { name: 'place_bid', description: 'Place a bid on an active auction. Requires confirmation.', inputSchema: { type: 'object', properties: { trade_id: { type: 'integer' }, bid_amount: { type: 'integer' } }, required: ['trade_id','bid_amount'] } },
   { name: 'list_on_market', description: 'List an item on the transfer market for sale. Item must be in tradepile.', inputSchema: { type: 'object', properties: { item_id: { type: 'integer' }, start_price: { type: 'integer' }, buy_now_price: { type: 'integer' }, duration: { type: 'integer', enum: [3600,10800,21600,43200,86400,259200], default: 3600 } }, required: ['item_id','start_price','buy_now_price'] } },
-  { name: 'get_club_players', description: 'Get players currently in the club. Filter by position, rating.', inputSchema: { type: 'object', properties: { position: { type: 'string' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' }, is_untradeable: { type: 'boolean' }, count: { type: 'integer', default: 50 } } } },
+  { name: 'sell_premium_fodder', description: 'List high-value bronze/silver (Nilsen, Bounou, Guendouzi, Diop…) at EA market average. confirm: true to execute.', inputSchema: { type: 'object', properties: { confirm: { type: 'boolean', default: false }, dry_run: { type: 'boolean', default: false }, min_bronze: { type: 'integer', default: 350 }, min_silver: { type: 'integer', default: 650 }, min_multiplier: { type: 'number', default: 2.5 }, duration: { type: 'integer', enum: [3600,10800,21600,43200,86400,259200], default: 3600 }, use_cache: { type: 'boolean', default: true }, force_refresh: { type: 'boolean', default: false } } } },
+  { name: 'get_club_players', description: 'Get players in club (cache by default). force_refresh hits EA.', inputSchema: { type: 'object', properties: { position: { type: 'string' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' }, is_untradeable: { type: 'boolean' }, count: { type: 'integer', default: 50 }, use_cache: { type: 'boolean', default: true }, force_refresh: { type: 'boolean', default: false } } } },
+  { name: 'get_fut_cache', description: 'Read local FUT cache (club, squad, formation, tradepile, etc.).', inputSchema: { type: 'object', properties: { refresh_if_empty: { type: 'boolean', default: false } } } },
+  { name: 'refresh_fut_cache', description: 'Manually refresh full FUT cache from EA.', inputSchema: { type: 'object', properties: {} } },
+  { name: 'get_active_squad', description: 'Get active squad and formation (cache unless force_refresh).', inputSchema: { type: 'object', properties: { force_refresh: { type: 'boolean', default: false } } } },
   { name: 'get_unassigned', description: 'Get all unassigned items (not yet sent to club or tradepile).', inputSchema: { type: 'object', properties: {} } },
   { name: 'send_to_tradepile', description: 'Move an item to the tradepile for selling.', inputSchema: { type: 'object', properties: { item_id: { type: 'integer' } }, required: ['item_id'] } },
   { name: 'send_to_club', description: 'Send an item to the club.', inputSchema: { type: 'object', properties: { item_id: { type: 'integer' } }, required: ['item_id'] } },
@@ -142,10 +146,13 @@ const TOOL_DEFINITIONS = [
   { name: 'get_sbc_sets', description: 'Get SBC categories and sets.', inputSchema: { type: 'object', properties: {} } },
   { name: 'get_sbc_requirements', description: 'Get detailed requirements for a specific SBC challenge.', inputSchema: { type: 'object', properties: { sbc_id: { type: 'string' } }, required: ['sbc_id'] } },
   { name: 'get_sbc_squad', description: 'Get current draft squad for an SBC challenge.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' } }, required: ['challenge_id'] } },
-  { name: 'solve_sbc', description: 'Solve an SBC and return preview (no submit).', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, challenge_name: { type: 'string' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' }, include_unassigned: { type: 'boolean' } }, required: ['challenge_id'] } },
+  { name: 'solve_sbc', description: 'Solve SBC — preview with names and bilingual positions. Use challenge_id (reads EA elgReq).', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, challenge_name: { type: 'string' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' }, include_unassigned: { type: 'boolean' }, use_cache: { type: 'boolean', default: true }, use_heuristics: { type: 'boolean', default: false } } } },
+  { name: 'analyze_sbcs', description: 'Scan all active SBCs, read EA requirements per challenge, rank by feasibility and cost-benefit for your club.', inputSchema: { type: 'object', properties: { category: { type: 'string' }, daily_only: { type: 'boolean', default: false }, max_sets: { type: 'integer', default: 40 }, top_n: { type: 'integer', default: 15 }, try_solve: { type: 'boolean', default: true }, include_completed: { type: 'boolean', default: false }, include_all: { type: 'boolean', default: false }, force_refresh: { type: 'boolean', default: false }, use_cache: { type: 'boolean', default: true } } } },
+  { name: 'solve_sbc_set', description: 'Solve all challenges in one SBC set (preview). Reserves players across challenges.', inputSchema: { type: 'object', properties: { set_id: { type: 'string' }, set_name: { type: 'string' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' }, use_cache: { type: 'boolean', default: true } } } },
   { name: 'apply_sbc_solution', description: 'Apply squad to SBC. Requires confirm: true.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, item_ids: { type: 'array', items: { type: 'integer' } }, confirm: { type: 'boolean' } }, required: ['challenge_id', 'item_ids'] } },
   { name: 'submit_sbc', description: 'Submit SBC after squad applied. Requires confirm: true.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, set_id: { type: 'integer' }, confirm: { type: 'boolean' } }, required: ['challenge_id'] } },
-  { name: 'complete_sbc', description: 'Solve, apply, and submit SBC. Preview without confirm; execute with confirm: true.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, challenge_name: { type: 'string' }, set_id: { type: 'integer' }, confirm: { type: 'boolean' }, apply_only: { type: 'boolean' }, repeat: { type: 'integer' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' } }, required: ['challenge_id'] } },
+  { name: 'complete_sbc', description: 'Single SBC run: solve → apply → submit. confirm: true to execute.', inputSchema: { type: 'object', properties: { challenge_id: { type: 'string' }, challenge_name: { type: 'string' }, set_id: { type: 'integer' }, confirm: { type: 'boolean' }, apply_only: { type: 'boolean' }, min_rating: { type: 'integer' }, max_rating: { type: 'integer' }, use_cache: { type: 'boolean', default: true } } } },
+  { name: 'get_club_analytics', description: 'Portfolio analytics: value, investments, P/L, fodder, rating distribution, top gainers/losers.', inputSchema: { type: 'object', properties: { force_refresh: { type: 'boolean', default: false }, use_futbin: { type: 'boolean', default: true }, platform: { type: 'string', enum: ['pc','ps','xbox'], default: 'pc' }, top_n: { type: 'integer', default: 10 } } } },
   { name: 'get_coin_balance', description: 'Get current FUT coin balance.', inputSchema: { type: 'object', properties: {} } },
   { name: 'get_player_market_data', description: 'Get price data from FutBin. Does NOT hit EA servers.', inputSchema: { type: 'object', properties: { player_name: { type: 'string' }, asset_id: { type: 'integer' }, platform: { type: 'string', enum: ['pc','ps','xbox'], default: 'pc' } } } },
   { name: 'get_session_status', description: 'Check if web app is open, session is authenticated, and rate limit usage.', inputSchema: { type: 'object', properties: {} } },
@@ -161,7 +168,7 @@ function handleLocally(request) {
       result: {
         protocolVersion: '2024-11-05',
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: 'fc26-copilot', version: '2.0.0' },
+        serverInfo: { name: 'fut-pilot', version: '2.3.1' },
       },
     };
   }
@@ -216,9 +223,9 @@ function forwardToExtension(request) {
       resolve({
         jsonrpc: '2.0',
         id: request.id,
-        error: { code: -32000, message: 'Request timeout (30s)' },
+        error: { code: -32000, message: 'Request timeout (120s)' },
       });
-    }, 30000);
+    }, 120000);
 
     pendingRequests.set(requestId, { resolve, timeout });
 
@@ -325,7 +332,7 @@ function getBridgeHTML() {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>FC26 Copilot — MCP Bridge</title>
+  <title>FUT Pilot — MCP Bridge</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -375,7 +382,7 @@ function getBridgeHTML() {
 </head>
 <body>
   <div class="card">
-    <h1>FC26 Copilot</h1>
+    <h1>FUT Pilot</h1>
     <p class="subtitle">MCP Bridge — connects Claude to your extension</p>
 
     <label for="extId">Extension ID</label>

@@ -15,6 +15,7 @@ import {
   getPlayerClub,
 } from './chemistry-engine.js';
 import { estimatePlayerCost } from './player-pool.js';
+import { shouldUseCspSolver, solveSbcCsp } from './csp-solver.js';
 
 const SOLVER_TIMEOUT_MS = 15000;
 const MAX_CANDIDATES = 120;
@@ -75,7 +76,15 @@ export function solveSbc(constraints, pool, options = {}) {
  */
 export function solveFromChallengeData(challengeData, pool, options = {}) {
   let constraints = parseSbcRequirements(challengeData);
-  constraints = applyUpgradeHeuristics(constraints, options.challengeName || constraints.name);
+  if (options.use_heuristics === true) {
+    constraints = applyUpgradeHeuristics(constraints, options.challengeName || constraints.name);
+  }
+
+  if (shouldUseCspSolver(constraints)) {
+    const cspSolution = solveSbcCsp(constraints, pool, options);
+    if (cspSolution) return cspSolution;
+  }
+
   return solveSbc(constraints, pool, options);
 }
 
@@ -217,7 +226,7 @@ function maxSameGroup(squad, getter) {
 
 /**
  * Map solution to slot indices for EA PUT squad API.
- * Upgrade SBCs use slot 0 only; full squads fill 0..N-1.
+ * Upgrade SBCs use fewer slots; full squads fill 0..N-1 (typically 11).
  * @param {import('./types.js').SbcSolution} solution
  * @param {number} slotCount
  */

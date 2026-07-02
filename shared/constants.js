@@ -24,6 +24,7 @@ export const ERROR_CODES = {
   ITEM_SOLD: 409,
   RATE_LIMITED: 429,
   TRANSFER_BAN: 461,
+  TRANSFER_MARKET_LOCKED: 494,
   SERVER_ERROR: 521,
 };
 
@@ -31,6 +32,7 @@ export const BACKOFF_DURATIONS = {
   [ERROR_CODES.FORBIDDEN]: 600_000,      // 10 minutes
   [ERROR_CODES.RATE_LIMITED]: 300_000,    // 5 minutes
   [ERROR_CODES.TRANSFER_BAN]: 86_400_000, // 24 hours
+  [ERROR_CODES.TRANSFER_MARKET_LOCKED]: 86_400_000,
   [ERROR_CODES.SERVER_ERROR]: 30_000,     // 30 seconds
 };
 
@@ -47,7 +49,11 @@ export const SESSION_CONFIG = {
   MAX_BREAK_MINUTES: 15,
   KEEPALIVE_MIN_MS: 300_000,
   KEEPALIVE_MAX_MS: 480_000,
+  RESTORE_MAX_AGE_MS: 24 * 60 * 60 * 1000,
 };
+
+export const FUT_WEB_APP_URL =
+  'https://www.ea.com/ea-sports-fc/ultimate-team/web-app';
 
 export const LOG_CONFIG = {
   MAX_ENTRIES: 1000,

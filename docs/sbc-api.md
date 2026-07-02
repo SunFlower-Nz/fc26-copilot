@@ -1,4 +1,4 @@
-# EA FC26 SBC API Reference (FC26 Copilot)
+# EA FC26 SBC API Reference (FUT Pilot)
 
 Undocumented internal API used by the FUT Web App. Base URL is captured at runtime, e.g. `https://utas.mob.aem.ea.com/ut/game/fc26`.
 
@@ -56,7 +56,7 @@ After PUT squad, re-fetch `GET /sbs/challenge/{challengeId}` and inspect:
 - `elgReq` satisfaction (when exposed)
 - Squad response may include chemistry and rating fields
 
-FC26 Copilot uses EA response as source of truth when local chemistry estimate differs.
+FUT Pilot uses EA response as source of truth when local chemistry estimate differs.
 
 ## Rate limiting
 

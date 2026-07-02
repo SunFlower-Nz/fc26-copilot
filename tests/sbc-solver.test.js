@@ -11,7 +11,8 @@ import {
   calculateTeamRating,
 } from '../background/sbc/chemistry-engine.js';
 import { solveFromChallengeData, satisfiesConstraints } from '../background/sbc/solver.js';
-import { isPlayerProtected } from '../background/sbc/protected-players.js';
+import { isPlayerProtected, isSpecialOrPromoCard } from '../background/sbc/protected-players.js';
+import { estimatePlayerCost, getPlayerSelectionTier } from '../background/sbc/player-pool.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturesDir = path.join(__dirname, 'fixtures');
@@ -48,6 +49,15 @@ describe('requirements-parser', () => {
     expect(getRequiredPlayerCount(constraints)).toBe(5);
   });
 
+  test('parses silver upgrade with 11 players', () => {
+    const data = loadFixture('sbc-silver-upgrade.json');
+    const constraints = parseSbcRequirements(data);
+    expect(getRequiredPlayerCount(constraints)).toBe(11);
+    expect(
+      constraints.playerRequirements.some((r) => r.type === 'PLAYER_LEVEL' && r.count === 11)
+    ).toBe(true);
+  });
+
   test('parses full squad chemistry and rating reqs', () => {
     const data = loadFixture('sbc-full-squad.json');
     const constraints = parseSbcRequirements(data);
@@ -82,6 +92,35 @@ describe('protected-players', () => {
     const player = makePlayer({ id: 2, rating: 58 });
     expect(isPlayerProtected(player, { minRating: 87 })).toBe(false);
   });
+
+  test('blocks Future Stars / promo rareflag', () => {
+    const player = makePlayer({ id: 3, rating: 88, rareflag: 34 });
+    expect(isSpecialOrPromoCard(player)).toBe(true);
+    expect(isPlayerProtected(player, { minRating: 50, fodderOnly: true })).toBe(true);
+  });
+});
+
+describe('player-pool priority', () => {
+  test('prefers SBC storage over untradeable over tradeable', () => {
+    const storage = makePlayer({ id: 1, rating: 70, inSbcStorage: true, pile: 'sbc_storage' });
+    const untradeable = makePlayer({ id: 2, rating: 66, untradeable: true });
+    const tradeable = makePlayer({
+      id: 3,
+      rating: 66,
+      untradeable: false,
+      marketAverage: 500,
+    });
+    expect(getPlayerSelectionTier(storage)).toBeLessThan(getPlayerSelectionTier(untradeable));
+    expect(getPlayerSelectionTier(untradeable)).toBeLessThan(getPlayerSelectionTier(tradeable));
+    expect(estimatePlayerCost(storage)).toBeLessThan(estimatePlayerCost(untradeable));
+    expect(estimatePlayerCost(untradeable)).toBeLessThan(estimatePlayerCost(tradeable));
+  });
+
+  test('picks cheapest tradeable by market value', () => {
+    const cheap = makePlayer({ id: 4, rating: 70, untradeable: false, marketAverage: 200 });
+    const expensive = makePlayer({ id: 5, rating: 70, untradeable: false, marketAverage: 900 });
+    expect(estimatePlayerCost(cheap)).toBeLessThan(estimatePlayerCost(expensive));
+  });
 });
 
 describe('solver', () => {
@@ -98,15 +137,15 @@ describe('solver', () => {
     expect(solution.players[0].player.rating).toBe(55);
   });
 
-  test('solves silver upgrade', () => {
+  test('solves silver upgrade with 11 silvers', () => {
     const data = loadFixture('sbc-silver-upgrade.json');
-    const pool = [
-      makePlayer({ id: 201, rating: 70 }),
-      makePlayer({ id: 202, rating: 66 }),
-    ];
+    const pool = Array.from({ length: 15 }, (_, i) =>
+      makePlayer({ id: 200 + i, rating: 66 + (i % 5) })
+    );
     const solution = solveFromChallengeData(data, pool, { challengeName: data.name });
     expect(solution).not.toBeNull();
-    expect(solution.players[0].player.rating).toBe(66);
+    expect(solution.players).toHaveLength(11);
+    expect(solution.players.every((p) => p.player.rating >= 65 && p.player.rating <= 74)).toBe(true);
   });
 
   test('solves gold upgrade with 5 golds', () => {
