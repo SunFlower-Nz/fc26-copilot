@@ -34,13 +34,12 @@ git push -u origin main
 - `origin` → seu fork `SunFlower-Nz/fc26-copilot`
 - `upstream` → original `Eng-Abdelrahman-Mostafa/fc26-copilot`
 
-## Versionamento (branch + tag por versão)
+## Versionamento
 
-Ver **[docs/versioning.md](versioning.md)** — cada versão (ex.: 2.4.5) ganha branch `release/v2.4.5`, tag `v2.4.5` e opcionalmente repositório separado.
+Todas as atualizações vão para **`main`**. Ver **[docs/versioning.md](versioning.md)**.
 
 ```powershell
-.\scripts\publish-version.ps1 -Version 2.4.5
-git push origin main release/v2.4.5 v2.4.5
+git push origin main
 ```
 
 Para sincronizar com o original depois:
